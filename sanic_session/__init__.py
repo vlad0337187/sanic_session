@@ -1,6 +1,6 @@
-from .memcache_session_interface import MemcacheSessionInterface
-from .redis_session_interface import RedisSessionInterface
-from .in_memory_session_interface import InMemorySessionInterface
+from .asyncio_redis import RedisSessionInterface
+from .memcache import MemcacheSessionInterface
+from .in_memory import InMemorySessionInterface
 
 # Delay exceptions for missing mongodb dependencies to allow us to
 # work as long as mongodb is not being used.

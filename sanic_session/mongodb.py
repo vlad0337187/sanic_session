@@ -1,10 +1,9 @@
+from datetime import datetime, timedelta
 import uuid
 
-from datetime import datetime, timedelta
-
 from sanic_motor import BaseModel
-from .base import BaseSessionInterface, SessionDict
 
+from .base import BaseSessionInterface, SessionDict
 
 
 class _SessionModel(BaseModel):
@@ -19,7 +18,6 @@ class _SessionModel(BaseModel):
             User's session data
     """
     pass
-
 
 
 class MongoDBSessionInterface(BaseSessionInterface):

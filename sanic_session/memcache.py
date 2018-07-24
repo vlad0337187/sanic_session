@@ -1,6 +1,8 @@
 import ujson
-from .base import BaseSessionInterface, SessionDict
 import uuid
+
+from .base import BaseSessionInterface, SessionDict
+
 
 class MemcacheSessionInterface(BaseSessionInterface):
     def __init__(

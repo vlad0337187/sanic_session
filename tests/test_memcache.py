@@ -1,6 +1,6 @@
 import time
 from sanic.response import text
-from sanic_session.memcache_session_interface import MemcacheSessionInterface
+from sanic_session.memcache import MemcacheSessionInterface
 import pytest
 import uuid
 import ujson
@@ -33,22 +33,6 @@ def mock_coroutine(return_value=None):
         return return_value
 
     return Mock(wraps=mock_coro)
-
-
-async def get_interface_and_request(mocker, memcache_connection, data=None):
-    request = mock_dict()
-    request.cookies = COOKIES
-    data = data or {}
-
-    memcache_connection = mock_memcache()
-    memcache_connection.get = mock_coroutine(ujson.dumps(data))
-
-    session_interface = MemcacheSessionInterface(
-        memcache_connection,
-        cookie_name=COOKIE_NAME)
-    await session_interface.open(request)
-
-    return session_interface, request
 
 
 @pytest.mark.asyncio

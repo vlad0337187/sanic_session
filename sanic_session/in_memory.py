@@ -1,7 +1,8 @@
 import ujson
+import uuid
+
 from .base import BaseSessionInterface, SessionDict
 from .utils import ExpiringDict
-import uuid
 
 
 class InMemorySessionInterface(BaseSessionInterface):

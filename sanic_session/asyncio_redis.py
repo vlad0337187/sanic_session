@@ -1,8 +1,8 @@
+from typing import Callable
 import ujson
-from .base import BaseSessionInterface, SessionDict
 import uuid
 
-from typing import Callable
+from .base import BaseSessionInterface, SessionDict
 
 
 class RedisSessionInterface(BaseSessionInterface):
