@@ -8,14 +8,21 @@ except:
 
 
 # Set requirements here
-requirements = ('sanic', 'sanic_motor', 'ujson')
+requirements = ('sanic', 'ujson')
+
+extras_require = {
+    'aioredis': ['aioredis>=1.0.0'],
+    'asyncio_redis': ['asyncio_redis'],
+    'mongo': ['sanic_motor', 'pymongo'],
+    'aiomcache': ['aiomcache>=0.5.2'],
+}
 
 setup(
     name='sanic_session',
-    version='0.1.3',
-    description='Provides server-backed sessions for Sanic using Redis, Memcache and more.',
+    version='0.2.5',
+    description='Provides server-backed sessions for Sanic using Redis, Memcache, Mongo, in-memory.',
     long_description=long_description,
-    url='http://github.com/subyraman/sanic_session',
+    url='(https://github.com/vlad1777d/sanic_session',
     author='Suby Raman',
     license='MIT',
     packages=['sanic_session'],

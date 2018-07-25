@@ -1,31 +1,27 @@
 from .base import BaseSessionInterface
 
 
-def check_aiomcache_installed():
-    """Check aiomcache installed, if absent - raises error.
+def check_aioredis_installed():
+    """Check aioredis installed, if absent - raises error.
     """
     try:
-        import aiomcache
-    except ImportError:  # pragma: no cover
-        aiomcache = None
-
-    if aiomcache is None:
-        raise RuntimeError("Please install aiomcache: pip install sanic_session[aiomcache]")
+        import aioredis
+    except ImportError:
+        raise RuntimeError("Please install aioredis: pip install sanic_session[aioredis]")
 
 
-class MemcacheSessionInterface(BaseSessionInterface):
+class AIORedisSessionInterface(BaseSessionInterface):
     def __init__(
-            self, memcache_connection,
+            self, redis,
             domain: str=None, expiry: int = 2592000,
-            httponly: bool=True, cookie_name: str = 'session',
-            prefix: str = 'session:',
+            httponly: bool=True, cookie_name: str='session',
+            prefix: str='session:',
             sessioncookie: bool=False,
             pass_dependency_check: bool=False):
-        """Initializes the interface for storing client sessions in memcache.
-        Requires a client object establised with `asyncio_memcache`.
+        """Initializes a session interface backed by Redis.
         Args:
-            memcache_connection (aiomccache.Client):
-                The memcache client used for interfacing with memcache.
+            redis (Callable):
+                aioredis connection or connection pool instance.
             domain (str, optional):
                 Optional domain which will be attached to the cookie.
             expiry (int, optional):
@@ -47,16 +43,10 @@ class MemcacheSessionInterface(BaseSessionInterface):
                 Check can be passed, for example, when running tests.
         """
         if not pass_dependency_check:
-            check_aiomcache_installed()
+            check_aioredis_installed()
 
-        self.memcache_connection = memcache_connection
-
-        # memcache has a maximum 30-day cache limit
-        if expiry > 2592000:
-            self.expiry = 0
-        else:
-            self.expiry = expiry
-
+        self.redis = redis
+        self.expiry = expiry
         self.prefix = prefix
         self.cookie_name = cookie_name
         self.domain = domain
@@ -64,15 +54,11 @@ class MemcacheSessionInterface(BaseSessionInterface):
         self.sessioncookie = sessioncookie
 
     async def _get_value(self, prefix, sid):
-        key = (self.prefix + sid).encode()
-        value = await self.memcache_connection.get(key)
-        return value.decode() if value else None
+        return await self.redis.get(self.prefix + sid)
 
     async def _delete_key(self, key):
-        return await self.memcache_connection.delete(key.encode())
+        await self.redis.delete(key)
 
     async def _set_value(self, key, data):
-        return await self.memcache_connection.set(
-            key.encode(), data.encode(),
-            exptime=self.expiry
-        )
+        await self.redis.setex(key, self.expiry, data)
+

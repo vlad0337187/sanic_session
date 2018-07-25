@@ -60,13 +60,11 @@ class UpdateDictMixin(object):
 
 
 class CallbackDict(UpdateDictMixin, dict):
-
     """A dict that calls a function passed every time something is changed.
     The function is passed the dict instance.
 
     Copyright (c) 2015 by Armin Ronacher and contributors.  See AUTHORS
     in FLASK_LICENSE for more details.
-
     """
 
     def __init__(self, initial=None, on_update=None):

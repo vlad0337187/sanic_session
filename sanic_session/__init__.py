@@ -1,16 +1,7 @@
-from .asyncio_redis import RedisSessionInterface
+from .aioredis import AIORedisSessionInterface
+from .asyncio_redis import AsyncioRedisSessionInterface
 from .memcache import MemcacheSessionInterface
 from .in_memory import InMemorySessionInterface
-
-# Delay exceptions for missing mongodb dependencies to allow us to
-# work as long as mongodb is not being used.
-try:
-    from .mongodb_session_interface import MongoDBSessionInterface
-except ModuleNotFoundError as e:
-    saved_exception = e
-    class MongoDBSessionInterface(object):
-        def __init__(self, *args, **kwargs):
-            raise saved_exception
 
 
 def install_middleware(app, interface, *args, **kwargs):
@@ -18,15 +9,18 @@ def install_middleware(app, interface, *args, **kwargs):
     'app' - sanic 'Application' instance to add middleware.
     'interface' - name of interface to use.
     Can be:
-        InMemorySessionInterface, RedisSessionInterface,
+        InMemorySessionInterface,
+        AIORedisSessionInterface, AsyncioRedisSessionInterface,
         MemcacheSessionInterface, MongoDBSessionInterface
     """
     if interface == 'InMemorySessionInterface':
         session_interface = InMemorySessionInterface(*args, **kwargs)
+    elif interface == 'AIORedisSessionInterface':
+        session_interface = AIORedisSessionInterface(*args, **kwargs)
+    elif interface == 'AsyncioRedisSessionInterface':
+        session_interface = AsyncioRedisSessionInterface(*args, **kwargs)
     elif interface == 'MemcacheSessionInterface':
         session_interface = MemcacheSessionInterface(*args, **kwargs)
-    elif interface == 'RedisSessionInterface':
-        session_interface = RedisSessionInterface(*args, **kwargs)
     elif interface == 'MongoDBSessionInterface':
         session_interface = MongoDBSessionInterface(*args, **kwargs)
 

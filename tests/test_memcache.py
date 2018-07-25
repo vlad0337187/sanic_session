@@ -44,7 +44,10 @@ async def test_memcache_should_create_new_sid_if_no_cookie(
     memcache_connection.get = mock_coroutine()
 
     mocker.spy(uuid, 'uuid4')
-    session_interface = MemcacheSessionInterface(memcache_connection)
+    session_interface = MemcacheSessionInterface(
+        memcache_connection,
+        pass_dependency_check=True,
+    )
     await session_interface.open(request)
 
     assert uuid.uuid4.call_count == 1, 'should create a new SID with uuid'
@@ -66,7 +69,9 @@ async def test_should_return_data_from_memcache(
 
     session_interface = MemcacheSessionInterface(
         memcache_connection,
-        cookie_name=COOKIE_NAME)
+        cookie_name=COOKIE_NAME,
+        pass_dependency_check=True,
+    )
     session = await session_interface.open(request)
 
     assert uuid.uuid4.call_count == 0, 'should not create a new SID'
@@ -93,7 +98,9 @@ async def test_should_use_prefix_in_memcache_key(
     session_interface = MemcacheSessionInterface(
         memcache_connection,
         cookie_name=COOKIE_NAME,
-        prefix=prefix)
+        prefix=prefix,
+        pass_dependency_check=True,
+    )
     await session_interface.open(request)
 
     assert memcache_connection.get.call_args_list[0][0][0] == \
@@ -114,7 +121,9 @@ async def test_should_use_return_empty_session_via_memcache(
     session_interface = MemcacheSessionInterface(
         memcache_connection,
         cookie_name=COOKIE_NAME,
-        prefix=prefix)
+        prefix=prefix,
+        pass_dependency_check=True,
+    )
     session = await session_interface.open(request)
 
     assert session == {}
@@ -130,7 +139,9 @@ async def test_should_attach_session_to_request(mock_memcache, mock_dict):
 
     session_interface = MemcacheSessionInterface(
         memcache_connection,
-        cookie_name=COOKIE_NAME)
+        cookie_name=COOKIE_NAME,
+        pass_dependency_check=True,
+    )
     session = await session_interface.open(request)
 
     assert session == request['session']
@@ -149,7 +160,9 @@ async def test_should_delete_session_from_memcache(mocker, mock_memcache, mock_d
 
     session_interface = MemcacheSessionInterface(
         memcache_connection,
-        cookie_name=COOKIE_NAME)
+        cookie_name=COOKIE_NAME,
+        pass_dependency_check=True,
+    )
 
     await session_interface.open(request)
     await session_interface.save(request, response)
@@ -173,7 +186,9 @@ async def test_should_expire_memcache_cookies_if_modified(mock_dict, mock_memcac
 
     session_interface = MemcacheSessionInterface(
         memcache_connection,
-        cookie_name=COOKIE_NAME)
+        cookie_name=COOKIE_NAME,
+        pass_dependency_check=True,
+    )
 
     await session_interface.open(request)
 
@@ -195,7 +210,9 @@ async def test_should_save_in_memcache_for_time_specified(mock_dict, mock_memcac
 
     session_interface = MemcacheSessionInterface(
         memcache_connection,
-        cookie_name=COOKIE_NAME)
+        cookie_name=COOKIE_NAME,
+        pass_dependency_check=True,
+    )
 
     await session_interface.open(request)
 
@@ -221,7 +238,9 @@ async def test_should_reset_cookie_expiry(mocker, mock_dict, mock_memcache):
 
     session_interface = MemcacheSessionInterface(
         memcache_connection,
-        cookie_name=COOKIE_NAME)
+        cookie_name=COOKIE_NAME,
+        pass_dependency_check=True,
+    )
 
     await session_interface.open(request)
     request['session']['foo'] = 'baz'
@@ -246,7 +265,9 @@ async def test_sessioncookie_should_omit_request_headers(mocker, mock_dict, mock
     session_interface = MemcacheSessionInterface(
         memcache_connection,
         cookie_name=COOKIE_NAME,
-        sessioncookie=True)
+        sessioncookie=True,
+        pass_dependency_check=True,
+    )
 
     await session_interface.open(request)
     await session_interface.save(request, response)
@@ -269,7 +290,9 @@ async def test_sessioncookie_delete_has_expiration_headers(mocker, mock_dict, mo
     session_interface = MemcacheSessionInterface(
         memcache_connection,
         cookie_name=COOKIE_NAME,
-        sessioncookie=True)
+        sessioncookie=True,
+        pass_dependency_check=True,
+    )
 
     await session_interface.open(request)
     await session_interface.save(request, response)
