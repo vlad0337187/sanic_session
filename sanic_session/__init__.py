@@ -28,15 +28,17 @@ def install_middleware(app, interface, *args, **kwargs):
         app.extensions = {}
     app.extensions['session'] = session_interface
 
-    @app.middleware('request')
     async def add_session_to_request(request):
         """Before each request initialize a session using the client's request.
         """
         await session_interface.open(request)
 
-    @app.middleware('response')
     async def save_session(request, response):
         """After each request save the session,
         pass the response to set client cookies.
         """
         await session_interface.save(request, response)
+
+    # open session before other middleware:
+    app.request_middleware.appendleft(add_session_to_request)
+    app.response_middleware.append(save_session)

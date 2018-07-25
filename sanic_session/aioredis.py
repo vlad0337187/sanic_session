@@ -12,12 +12,16 @@ def check_aioredis_installed():
 
 class AIORedisSessionInterface(BaseSessionInterface):
     def __init__(
-            self, redis,
-            domain: str=None, expiry: int = 2592000,
-            httponly: bool=True, cookie_name: str='session',
+            self,
+            redis,
+            domain: str=None,
+            expiry: int = 2592000,
+            httponly: bool=True,
+            cookie_name: str='session',
             prefix: str='session:',
             sessioncookie: bool=False,
-            pass_dependency_check: bool=False):
+            pass_dependency_check: bool=False,
+        ):
         """Initializes a session interface backed by Redis.
         Args:
             redis (Callable):
