@@ -17,46 +17,25 @@ To integrate Redis with :code:`sanic_session` you need to pass a getter method i
 
     from sanic import Sanic
     from sanic.response import text
-    from sanic_session import RedisSessionInterface
+    import sanic_session
 
 
     app = Sanic()
 
 
-    class Redis:
-        """
-        A simple wrapper class that allows you to share a connection
-        pool across your application.
-        """
-        _pool = None
+    # general (for all app) redis pool
+    # (should be filled asynchronously after server start)
+    asyncio_redis_pool = None
 
-        async def get_redis_pool(self):
-            if not self._pool:
-                self._pool = await asyncio_redis.Pool.create(
-                    host='localhost', port=6379, poolsize=10
-                )
+    @app.listener ('before_server_start')
+        async def general_before_server_start (app, loop):
+            global asyncio_redis_pool
+            asyncio_redis_pool = await asyncio_redis.Pool.create(host='127.0.0.1', port=6379, poolsize=2)
+            sanic_session.install_middleware (app, 'AsyncioRedisSessionInterface', asyncio_redis_pool)
 
-            return self._pool
-
-
-    redis = Redis()
-
-    # pass the getter method for the connection pool into the session
-    session_interface = RedisSessionInterface(redis.get_redis_pool)
-
-
-    @app.middleware('request')
-    async def add_session_to_request(request):
-        # before each request initialize a session
-        # using the client's request
-        await session_interface.open(request)
-
-
-    @app.middleware('response')
-    async def save_session(request, response):
-        # after each request save the session,
-        # pass the response to set client cookies
-        await session_interface.save(request, response)
+    @app.listener ('after_server_stop')
+    async def general_after_server_stop (app, loop):
+        asyncio_redis_pool.close ()
 
 
     @app.route("/")
@@ -90,9 +69,10 @@ To integrate memcache with :code:`sanic_session` you need to pass an :code:`aiom
 
     from sanic import Sanic
     from sanic.response import text
-    from sanic_session import MemcacheSessionInterface
+    import sanic_session
 
     app = Sanic()
+
 
     # create a uvloop to pass into the memcache client and sanic
     loop = uvloop.new_event_loop()
@@ -100,22 +80,8 @@ To integrate memcache with :code:`sanic_session` you need to pass an :code:`aiom
     # create a memcache client
     client = aiomcache.Client("127.0.0.1", 11211, loop=loop)
 
-    # pass the memcache client into the session
-    session_interface = MemcacheSessionInterface(client)
-
-
-    @app.middleware('request')
-    async def add_session_to_request(request):
-        # before each request initialize a session
-        # using the client's request
-        await session_interface.open(request)
-
-
-    @app.middleware('response')
-    async def save_session(request, response):
-        # after each request save the session,
-        # pass the response to set client cookies
-        await session_interface.save(request, response)
+    # install sanic_session middleware with memcache client
+    sanic_session.install_middleware (app, 'MemcacheSessionInterface', client)
 
 
     @app.route("/")
@@ -142,24 +108,15 @@ In-Memory
 
     from sanic import Sanic
     from sanic.response import text
-    from sanic_session import InMemorySessionInterface
+    import sanic_session
 
 
     app = Sanic()
-    session_interface = InMemorySessionInterface()
-
-    @app.middleware('request')
-    async def add_session_to_request(request):
-        # before each request initialize a session
-        # using the client's request
-        await session_interface.open(request)
 
 
-    @app.middleware('response')
-    async def save_session(request, response):
-        # after each request save the session,
-        # pass the response to set client cookies
-        await session_interface.save(request, response)
+    # install sanic_session middleware
+    sanic_session.install_middleware (app, 'InMemorySessionInterface')
+
 
     @app.route("/")
     async def index(request):
